@@ -18,6 +18,7 @@ class VerseActionBar extends StatelessWidget {
     required this.onNote,
     required this.onCopy,
     required this.onShare,
+    required this.onCrossRef,
   });
 
   final AppStrings s;
@@ -32,6 +33,7 @@ class VerseActionBar extends StatelessWidget {
   final VoidCallback onNote;
   final VoidCallback onCopy;
   final VoidCallback onShare;
+  final VoidCallback onCrossRef;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +72,12 @@ class VerseActionBar extends StatelessWidget {
             label: s.verseNote,
             textColor: hasNote ? context.colors.accentDeep : textColor,
             onTap: onNote,
+          ),
+          _ActionBtn(
+            icon: Icons.alt_route_rounded,
+            label: s.verseCrossRef,
+            textColor: textColor,
+            onTap: onCrossRef,
           ),
           _ActionBtn(
             icon: Icons.copy_rounded,

@@ -28,6 +28,7 @@ import '../widgets/reader/highlight_sheet.dart';
 import '../widgets/reader/note_sheet.dart';
 import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
+import '../widgets/reader/cross_reference_sheet.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../share/verse_card_sheet.dart';
@@ -549,6 +550,69 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Cross reference sheet ──────────────────────────────────────────────────
+
+  void _showCrossReferenceSheet(BuildContext ctx, AppSettings settings) {
+    final verseNum = _selectionVerseStart;
+    if (verseNum == null) return;
+
+    final isDark = settings.isDarkReader;
+    final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+    final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
+    final mutedColor = isDark ? readerDarkMuted : AppColors.textMuted;
+    final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
+    final bodyFont = readerFonts[settings.bodyFontIndex];
+    final s = L10n.of(context);
+    final isAm = s is AmStrings;
+
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => CrossReferenceSheet(
+        sourceEntry: widget.entry,
+        sourceChapter: _currentChapterNumber,
+        sourceVerse: verseNum,
+        isDark: isDark,
+        surfaceColor: surfaceColor,
+        textColor: textColor,
+        mutedColor: mutedColor,
+        accentColor: accentColor,
+        bodyFont: bodyFont,
+        useGeez: settings.useGeezNumbers,
+        isAmharic: isAm,
+        onNavigate: (targetEntry, targetChapter, targetVerse) {
+          _deselect();
+          if (targetEntry.bookNumber == widget.entry.bookNumber) {
+            final chIdx = targetChapter - 1;
+            if (chIdx >= 0 && chIdx < _book!.chapters.length) {
+              _pageCtrl.jumpToPage(chIdx);
+              setState(() {
+                _currentChapter = chIdx;
+                _selectedKey = '$targetChapter:0:$targetVerse';
+                _selectionEndKey = null;
+              });
+              return;
+            }
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ReaderScreen(
+                entry: targetEntry,
+                initialChapter: targetChapter - 1,
+                initialVerse: targetVerse,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   // ── Note view sheet ───────────────────────────────────────────────────────
 
   void _showNoteView(String verseKey, ChapterAnnotations annotations) {
@@ -835,6 +899,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                           context,
                                           settings,
                                           annotations,
+                                        ),
+                                        onCrossRef: () => _showCrossReferenceSheet(
+                                          context,
+                                          settings,
                                         ),
                                         onCopy: () async {
                                           final text = _selectedVerseText(

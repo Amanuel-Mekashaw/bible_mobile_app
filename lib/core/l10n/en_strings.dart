@@ -289,6 +289,8 @@ class EnStrings extends AppStrings {
   @override
   String get verseShare => 'Share';
   @override
+  String get verseCrossRef => 'Cross Ref';
+  @override
   String get comingSoon => 'Coming soon';
 
   // ── Auth — shared ─────────────────────────────────────────────────────────

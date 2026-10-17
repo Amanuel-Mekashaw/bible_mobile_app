@@ -166,6 +166,7 @@ abstract class AppStrings {
   String get verseNote;
   String get verseCopy;
   String get verseShare;
+  String get verseCrossRef;
   String get comingSoon;
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
