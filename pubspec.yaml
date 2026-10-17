@@ -118,6 +118,11 @@ flutter:
       fonts:
         - asset: assets/fonts/Nokia_Pureheadline_Light_55fdcc36e6.ttf
           weight: 300
+    - family: NotoSansEthiopic
+      fonts:
+        - asset: assets/fonts/NotoSansEthiopic_Regular.ttf
+        - asset: assets/fonts/NotoSansEthiopic_Bold.ttf
+          weight: 700
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

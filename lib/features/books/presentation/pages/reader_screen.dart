@@ -29,6 +29,7 @@ import '../widgets/reader/note_sheet.dart';
 import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/cross_reference_sheet.dart';
+import '../../data/repositories/cross_reference_repository.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
 import '../../../share/verse_card_sheet.dart';
@@ -552,8 +553,15 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
 
   // ── Cross reference sheet ──────────────────────────────────────────────────
 
-  void _showCrossReferenceSheet(BuildContext ctx, AppSettings settings) {
-    final verseNum = _selectionVerseStart;
+  void _showCrossReferenceSheet(
+    BuildContext ctx,
+    AppSettings settings, {
+    int? selectedVerse,
+  }) {
+    if (selectedVerse != null) {
+      _selectVerse('$_currentChapterNumber:0:$selectedVerse');
+    }
+    final verseNum = selectedVerse ?? _selectionVerseStart;
     if (verseNum == null) return;
 
     final isDark = settings.isDarkReader;
@@ -817,6 +825,17 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                   )
                                                   .value ??
                                               ChapterAnnotations.empty;
+                                          final pageCrossRefs =
+                                              pageRef
+                                                  .watch(
+                                                    chapterCrossReferenceVersesProvider((
+                                                      bookNumber:
+                                                          widget.entry.bookNumber,
+                                                      chapter: pageChapterNum,
+                                                    )),
+                                                  )
+                                                  .value ??
+                                              const <int>{};
                                           return ReaderChapterPage(
                                             entry: widget.entry,
                                             chapter: _book!.chapters[i],
@@ -833,6 +852,13 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                             onVerseTap: _selectVerse,
                                             verseKeyFn: _verseKey,
                                             annotations: pageAnnotations,
+                                            crossRefVerseNums: pageCrossRefs,
+                                            onCrossRefTap: (vNum) =>
+                                                _showCrossReferenceSheet(
+                                                  context,
+                                                  settings,
+                                                  selectedVerse: vNum,
+                                                ),
                                             continuousReading:
                                                 settings.continuousReading,
                                             onNoteTap: (key, ann) =>

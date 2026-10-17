@@ -13,6 +13,7 @@ const List<String> readerFonts = [
   AppTypography.kiros,
   AppTypography.addisAbebaUnicode,
   AppTypography.nokiaPureheadline,
+  AppTypography.notoSansEthiopic,
 ];
 
 const List<String> readerFontNames = [
@@ -25,6 +26,7 @@ const List<String> readerFontNames = [
   'ኪሮስ',
   'አዲስ አበባ',
   'Nokia Pure',
+  'ኖቶ ሳንስ',
 ];
 
 const Color readerDarkBg      = AppColors.readerShellDarkBg;

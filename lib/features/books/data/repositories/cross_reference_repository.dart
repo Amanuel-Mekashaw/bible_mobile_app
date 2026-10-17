@@ -98,6 +98,23 @@ class CrossReferenceRepository {
     }
   }
 
+  Future<Set<int>> getVersesWithReferences({
+    required int bookNumber,
+    required int chapter,
+  }) async {
+    try {
+      final db = await _getDb();
+      final rows = await db.rawQuery(
+        'SELECT DISTINCT from_verse FROM cross_refs WHERE from_book = ? AND from_chapter = ?',
+        [bookNumber, chapter],
+      );
+      return rows.map((r) => r['from_verse'] as int).toSet();
+    } catch (e) {
+      debugPrint('[CrossReferenceRepository] error: $e');
+      return const <int>{};
+    }
+  }
+
   Future<void> close() async {
     await _db?.close();
     _db = null;
@@ -119,5 +136,16 @@ final verseCrossReferencesProvider =
     bookNumber: key.bookNumber,
     chapter: key.chapter,
     verse: key.verse,
+  );
+});
+
+typedef ChapterRefKey = ({int bookNumber, int chapter});
+
+final chapterCrossReferenceVersesProvider =
+    FutureProvider.family<Set<int>, ChapterRefKey>((ref, key) async {
+  final repo = ref.watch(crossReferenceRepositoryProvider);
+  return repo.getVersesWithReferences(
+    bookNumber: key.bookNumber,
+    chapter: key.chapter,
   );
 });

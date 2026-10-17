@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bibleflutter/core/theme/app_typography.dart';
 import 'package:bibleflutter/features/books/data/repositories/cross_reference_repository.dart';
+import 'package:bibleflutter/features/books/presentation/widgets/reader/constants.dart';
 
 void main() {
   group('CrossReference model test', () {
@@ -43,6 +45,12 @@ void main() {
 
       final ref = CrossReference.fromMap(map);
       expect(ref.isRange, isFalse);
+    });
+
+    test('readerFonts and readerFontNames include Noto Sans Ethiopic', () {
+      expect(readerFonts.contains(AppTypography.notoSansEthiopic), isTrue);
+      expect(readerFontNames.contains('ኖቶ ሳንስ'), isTrue);
+      expect(readerFonts.length, readerFontNames.length);
     });
   });
 }

@@ -31,6 +31,8 @@ class ReaderChapterPage extends StatelessWidget {
     this.spotlightKey,
     this.continuousReading = false,
     this.onNoteTap,
+    this.crossRefVerseNums = const {},
+    this.onCrossRefTap,
   });
 
   final BookIndexEntry entry;
@@ -52,6 +54,8 @@ class ReaderChapterPage extends StatelessWidget {
   final ChapterAnnotations annotations;
   final bool continuousReading;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final Set<int> crossRefVerseNums;
+  final ValueChanged<int>? onCrossRefTap;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +101,8 @@ class ReaderChapterPage extends StatelessWidget {
           spotlightKey:     spotlightKey,
           continuousReading: continuousReading,
           onNoteTap:        onNoteTap,
+          crossRefVerseNums: crossRefVerseNums,
+          onCrossRefTap:    onCrossRefTap,
         );
       },
     );
@@ -262,6 +268,8 @@ class SectionView extends StatelessWidget {
     this.spotlightKey,
     this.continuousReading = false,
     this.onNoteTap,
+    this.crossRefVerseNums = const {},
+    this.onCrossRefTap,
   });
 
   final Section section;
@@ -282,6 +290,8 @@ class SectionView extends StatelessWidget {
   final GlobalKey? spotlightKey;
   final bool continuousReading;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final Set<int> crossRefVerseNums;
+  final ValueChanged<int>? onCrossRefTap;
 
   @override
   Widget build(BuildContext context) {
@@ -307,6 +317,8 @@ class SectionView extends StatelessWidget {
               spotlightVerseNum: spotlightVerseNum,
               spotlightKey:     spotlightKey,
               onNoteTap:        onNoteTap,
+              crossRefVerseNums: crossRefVerseNums,
+              onCrossRefTap:    onCrossRefTap,
             ),
           ]
         : section.verses.map((verse) {
@@ -317,6 +329,7 @@ class SectionView extends StatelessWidget {
             final hlColor      = annotations.highlightColor(verse.verseNumber);
             final isBookmarked = annotations.isBookmarked(verse.verseNumber);
             final hasNote      = annotations.noteFor(verse.verseNumber) != null;
+            final hasCrossRef  = crossRefVerseNums.contains(verse.verseNumber);
 
             final bgColor = selected
                 ? (hlColor?.withValues(alpha: 0.5) ??
@@ -362,6 +375,27 @@ class SectionView extends StatelessWidget {
                               fontWeight: FontWeight.w400,
                             ),
                           ),
+                          if (hasCrossRef)
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => onCrossRefTap?.call(verse.verseNumber),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4, right: 2),
+                                  child: Text(
+                                    '*',
+                                    style: TextStyle(
+                                      fontFamily: AppTypography.nokiaPureheadline,
+                                      fontSize: fontSize * 0.9,
+                                      fontWeight: FontWeight.w900,
+                                      color: accentColor,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -443,6 +477,8 @@ class _ContinuousSection extends StatefulWidget {
     this.spotlightVerseNum,
     this.spotlightKey,
     this.onNoteTap,
+    this.crossRefVerseNums = const {},
+    this.onCrossRefTap,
   });
 
   final Section section;
@@ -461,6 +497,8 @@ class _ContinuousSection extends StatefulWidget {
   final int? spotlightVerseNum;
   final GlobalKey? spotlightKey;
   final void Function(String verseKey, ChapterAnnotations annotations)? onNoteTap;
+  final Set<int> crossRefVerseNums;
+  final ValueChanged<int>? onCrossRefTap;
 
   @override
   State<_ContinuousSection> createState() => _ContinuousSectionState();
@@ -515,6 +553,7 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
       final hlColor = widget.annotations.highlightColor(verse.verseNumber);
       final isBookmarked = widget.annotations.isBookmarked(verse.verseNumber);
       final hasNote = widget.annotations.noteFor(verse.verseNumber) != null;
+      final hasCrossRef = widget.crossRefVerseNums.contains(verse.verseNumber);
       final numStr = widget.useGeez
           ? toGeez(verse.verseNumber)
           : '${verse.verseNumber}';
@@ -573,6 +612,30 @@ class _ContinuousSectionState extends State<_ContinuousSection> {
           backgroundColor: bgColor,
         ),
       ));
+
+      // Cross reference indicator — bold asterisk matching light/dark theme
+      if (hasCrossRef) {
+        spans.add(WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => widget.onCrossRefTap?.call(verse.verseNumber),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 3, right: 2),
+              child: Text(
+                '*',
+                style: TextStyle(
+                  fontFamily: AppTypography.nokiaPureheadline,
+                  fontSize: widget.fontSize * 0.9,
+                  fontWeight: FontWeight.w900,
+                  color: widget.accentColor,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          ),
+        ));
+      }
 
       // Note indicator — tappable inline icon
       if (hasNote) {

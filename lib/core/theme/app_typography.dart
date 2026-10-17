@@ -11,6 +11,7 @@ abstract final class AppTypography {
   static const String kiros              = 'Kiros';              // traditional alternate
   static const String addisAbebaUnicode  = 'AddisAbebaUnicode';  // classic unicode Geez
   static const String nokiaPureheadline  = 'NokiaPureheadline';  // Latin / English UI
+  static const String notoSansEthiopic   = 'NotoSansEthiopic';   // modern clean reading
 
   // ── Amharic – Shiromeda (primary reading) ─────────────────────────────────
 
