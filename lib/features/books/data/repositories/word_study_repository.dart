@@ -111,8 +111,9 @@ class WordStudyRepository {
     final dbPath = p.join(dbDir, _dbName);
     final file = File(dbPath);
 
-    if (!await file.exists() || await file.length() == 0) {
-      final data = await rootBundle.load(_assetPath);
+    final data = await rootBundle.load(_assetPath);
+    final assetLength = data.lengthInBytes;
+    if (!await file.exists() || await file.length() != assetLength) {
       final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await file.parent.create(recursive: true);
       await file.writeAsBytes(bytes, flush: true);
@@ -120,6 +121,26 @@ class WordStudyRepository {
 
     _db = await openDatabase(dbPath, readOnly: true);
     return _db!;
+  }
+
+  Future<String> getBookLanguage(int bookNumber) async {
+    try {
+      final db = await _getDb();
+      final res = await db.query(
+        'books',
+        columns: ['language'],
+        where: 'book_number = ?',
+        whereArgs: [bookNumber],
+        limit: 1,
+      );
+      if (res.isNotEmpty) {
+        return (res.first['language'] as String?) ?? (bookNumber >= 55 ? 'greek' : 'hebrew');
+      }
+      return bookNumber >= 55 ? 'greek' : 'hebrew';
+    } catch (e) {
+      debugPrint('[WordStudyRepository] getBookLanguage error: $e');
+      return bookNumber >= 55 ? 'greek' : 'hebrew';
+    }
   }
 
   Future<bool> hasCorpusForBook(int bookNumber) async {
@@ -215,4 +236,10 @@ final bookHasCorpusProvider =
     FutureProvider.family<bool, int>((ref, bookNumber) async {
   final repo = ref.watch(wordStudyRepositoryProvider);
   return repo.hasCorpusForBook(bookNumber);
+});
+
+final bookLanguageProvider =
+    FutureProvider.family<String, int>((ref, bookNumber) async {
+  final repo = ref.watch(wordStudyRepositoryProvider);
+  return repo.getBookLanguage(bookNumber);
 });

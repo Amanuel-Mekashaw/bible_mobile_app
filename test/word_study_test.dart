@@ -100,6 +100,7 @@ void main() {
               chapter: 1,
               verse: 1,
             )).overrideWith((ref) => Future.value([])),
+            bookLanguageProvider(40).overrideWith((ref) => Future.value('geez')),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -171,6 +172,7 @@ void main() {
               verse: 1,
             )).overrideWith((ref) => Future.value([mockWord])),
             lexiconEntryProvider('G3056').overrideWith((ref) => Future.value(mockLexicon)),
+            bookLanguageProvider(58).overrideWith((ref) => Future.value('greek')),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -200,6 +202,69 @@ void main() {
       expect(find.text('G3056'), findsOneWidget);
       expect(find.text('ሥነ-መለኮታዊ ማብራሪያ'), findsOneWidget);
       expect(find.text('Logos: የተገለጠው መለኮታዊ ቃል'), findsOneWidget);
+    });
+
+    testWidgets('Renders Classical Ge\'ez word study card without Strongs', (tester) async {
+      const entry = BookIndexEntry(
+        bookNumber: 16,
+        bookNameAm: 'ሄኖክ',
+        bookNameEn: 'Enoch',
+        bookShortNameAm: 'ሄኖ',
+        bookShortNameEn: 'En',
+        testament: 'old',
+        filename: 'enoch.json',
+        chapterCount: 108,
+      );
+
+      const mockGeezWord = InterlinearWord(
+        id: 1,
+        bookNumber: 16,
+        chapter: 1,
+        verse: 1,
+        wordOrder: 1,
+        strongId: null,
+        originalText: 'ቃለ',
+        transliteration: 'qalä',
+        englishGloss: 'words',
+        amharicGloss: 'ቃል',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            verseInterlinearWordsProvider((
+              bookNumber: 16,
+              chapter: 1,
+              verse: 1,
+            )).overrideWith((ref) => Future.value([mockGeezWord])),
+            bookLanguageProvider(16).overrideWith((ref) => Future.value('geez')),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: WordStudySheet(
+                sourceEntry: entry,
+                sourceChapter: 1,
+                sourceVerse: 1,
+                isDark: false,
+                surfaceColor: Colors.white,
+                textColor: Colors.black,
+                mutedColor: Colors.grey,
+                accentColor: Colors.amber,
+                bodyFont: 'Shiromeda',
+                useGeez: false,
+                isAmharic: true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('ቃለ'), findsWidgets);
+      expect(find.text('qalä'), findsWidgets);
+      expect(find.text('ግእዝ (የቀደምት አበው)'), findsOneWidget);
+      expect(find.text('ግእዝ (ጥንታዊ ጽሑፍ)'), findsOneWidget);
     });
   });
 }

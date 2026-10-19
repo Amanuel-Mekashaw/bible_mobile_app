@@ -51,10 +51,24 @@ class _WordStudySheetState extends ConsumerState<WordStudySheet> {
     final colon = widget.isAmharic ? '፥' : ':';
     final sourceBadge = '$bookName $chStr$colon$vStr';
 
-    final isNewTestament = widget.sourceEntry.bookNumber >= 55;
-    final languageName = isNewTestament
-        ? (widget.isAmharic ? 'ግሪክ (አዲስ ኪዳን)' : 'Greek (NT)')
-        : (widget.isAmharic ? 'ዕብራይስጥ (ብሉይ ኪዳን)' : 'Hebrew (OT)');
+    final langAsync = ref.watch(bookLanguageProvider(widget.sourceEntry.bookNumber));
+    final lang = langAsync.value ?? (widget.sourceEntry.bookNumber >= 55 ? 'greek' : 'hebrew');
+    final String languageName;
+    switch (lang) {
+      case 'geez':
+        languageName = widget.isAmharic ? 'ግእዝ (ጥንታዊ ጽሑፍ)' : 'Classical Ge\'ez';
+        break;
+      case 'greek_lxx':
+        languageName = widget.isAmharic ? 'ግሪክ (ሰፕቱአጂንት / LXX)' : 'Greek (Septuagint LXX)';
+        break;
+      case 'greek':
+        languageName = widget.isAmharic ? 'ግሪክ (አዲስ ኪዳን)' : 'Greek (NT)';
+        break;
+      case 'hebrew':
+      default:
+        languageName = widget.isAmharic ? 'ዕብራይስጥ (ብሉይ ኪዳን)' : 'Hebrew (OT)';
+        break;
+    }
 
     final wordsAsync = ref.watch(verseInterlinearWordsProvider((
       bookNumber: widget.sourceEntry.bookNumber,
@@ -369,16 +383,132 @@ class _WordStudySheetState extends ConsumerState<WordStudySheet> {
   Widget _buildLexiconDetailCard(InterlinearWord word) {
     if (word.strongId == null || word.strongId!.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: widget.isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+          color: widget.isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.02),
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: widget.mutedColor.withValues(alpha: 0.18),
+          ),
         ),
-        child: Text(
-          widget.isAmharic
-              ? 'ለዚህ ቃል የተለየ የስትሮንግ ቁጥር አልተገኘም።'
-              : 'No Strong\'s entry assigned for this word particle.',
-          style: TextStyle(fontFamily: widget.bodyFont, color: widget.mutedColor),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        word.originalText,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: widget.textColor,
+                        ),
+                      ),
+                      if (word.transliteration.isNotEmpty)
+                        Text(
+                          word.transliteration,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            color: widget.accentColor,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: widget.accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: widget.accentColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    widget.isAmharic ? 'ግእዝ (የቀደምት አበው)' : 'Classical Ge\'ez',
+                    style: TextStyle(
+                      fontFamily: AppTypography.nokiaPureheadline,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: widget.accentColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (word.amharicGloss != null && word.amharicGloss!.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: widget.accentColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: widget.accentColor.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.isAmharic ? 'የአማርኛ ቀጥተኛ ትርጉም፦' : 'Amharic Contextual Translation:',
+                      style: TextStyle(
+                        fontFamily: AppTypography.nokiaPureheadline,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: widget.accentColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      word.amharicGloss!,
+                      style: TextStyle(
+                        fontFamily: widget.bodyFont,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: widget.textColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (word.englishGloss.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                widget.isAmharic ? 'የእንግሊዝኛ ፍቺ፦' : 'English Gloss:',
+                style: TextStyle(
+                  fontFamily: AppTypography.nokiaPureheadline,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: widget.mutedColor,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                word.englishGloss,
+                style: TextStyle(
+                  fontFamily: widget.bodyFont,
+                  fontSize: 13,
+                  color: widget.textColor,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Text(
+              widget.isAmharic
+                  ? 'ይህ ቃል በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ቀኖናዊ ቅዱሳት መጻሕፍት ጥንታዊ የግእዝ ቅጂ ውስጥ ተጠብቆ የቆየ ነው።'
+                  : 'Preserved classical Ge\'ez canonical manuscript text in the Ethiopian Orthodox tradition.',
+              style: TextStyle(
+                fontFamily: widget.bodyFont,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: widget.mutedColor,
+              ),
+            ),
+          ],
         ),
       );
     }
