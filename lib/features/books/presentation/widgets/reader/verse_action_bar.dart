@@ -19,6 +19,7 @@ class VerseActionBar extends StatelessWidget {
     required this.onCopy,
     required this.onShare,
     required this.onCrossRef,
+    required this.onWordStudy,
   });
 
   final AppStrings s;
@@ -34,6 +35,7 @@ class VerseActionBar extends StatelessWidget {
   final VoidCallback onCopy;
   final VoidCallback onShare;
   final VoidCallback onCrossRef;
+  final VoidCallback onWordStudy;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +82,12 @@ class VerseActionBar extends StatelessWidget {
             onTap: onCrossRef,
           ),
           _ActionBtn(
+            icon: Icons.translate_rounded,
+            label: s.verseWordStudy,
+            textColor: textColor,
+            onTap: onWordStudy,
+          ),
+          _ActionBtn(
             icon: Icons.copy_rounded,
             label: s.verseCopy,
             textColor: textColor,
@@ -117,7 +125,7 @@ class _ActionBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

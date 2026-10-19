@@ -29,6 +29,7 @@ import '../widgets/reader/note_sheet.dart';
 import '../widgets/reader/note_view_sheet.dart';
 import '../widgets/reader/verse_action_bar.dart';
 import '../widgets/reader/cross_reference_sheet.dart';
+import '../widgets/reader/word_study_sheet.dart';
 import '../../data/repositories/cross_reference_repository.dart';
 import '../widgets/reader/chapter_nav_bar.dart';
 import '../../../annotations/providers/annotation_providers.dart';
@@ -627,6 +628,57 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
     );
   }
 
+  // ── Word study sheet ────────────────────────────────────────────────────────
+
+  void _showWordStudySheet(
+    BuildContext ctx,
+    AppSettings settings, {
+    int? chapterNum,
+    int? selectedVerse,
+  }) {
+    final chNum = chapterNum ?? _currentChapterNumber;
+    if (selectedVerse != null) {
+      setState(() {
+        _selectedKey = '$chNum:0:$selectedVerse';
+        _selectionEndKey = null;
+      });
+      _persistReadingPosition();
+    }
+    final verseNum = selectedVerse ?? _selectionVerseStart;
+    if (verseNum == null) return;
+
+    final isDark = settings.isDarkReader;
+    final surfaceColor = isDark ? readerDarkSurface : Colors.white;
+    final textColor = isDark ? readerDarkText : AppColors.textOnParchment;
+    final mutedColor = isDark ? readerDarkMuted : AppColors.textMuted;
+    final accentColor = isDark ? readerDarkAccent : AppColors.accentDeep;
+    final bodyFont = readerFonts[settings.bodyFontIndex];
+    final s = L10n.of(context);
+    final isAm = s is AmStrings;
+
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => WordStudySheet(
+        sourceEntry: widget.entry,
+        sourceChapter: chNum,
+        sourceVerse: verseNum,
+        isDark: isDark,
+        surfaceColor: surfaceColor,
+        textColor: textColor,
+        mutedColor: mutedColor,
+        accentColor: accentColor,
+        bodyFont: bodyFont,
+        useGeez: settings.useGeezNumbers,
+        isAmharic: isAm,
+      ),
+    );
+  }
+
   // ── Note view sheet ───────────────────────────────────────────────────────
 
   void _showNoteView(String verseKey, ChapterAnnotations annotations) {
@@ -934,6 +986,10 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                           annotations,
                                         ),
                                         onCrossRef: () => _showCrossReferenceSheet(
+                                          context,
+                                          settings,
+                                        ),
+                                        onWordStudy: () => _showWordStudySheet(
                                           context,
                                           settings,
                                         ),

@@ -291,6 +291,8 @@ class AmStrings extends AppStrings {
   @override
   String get verseCrossRef => 'አመሳክሮሽ';
   @override
+  String get verseWordStudy => 'ቃላት';
+  @override
   String get comingSoon => 'በቅርቡ ይመጣል';
 
   // ── Auth — shared ─────────────────────────────────────────────────────────
