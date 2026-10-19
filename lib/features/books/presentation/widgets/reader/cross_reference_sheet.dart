@@ -229,7 +229,15 @@ class _CrossReferenceSheetState extends ConsumerState<CrossReferenceSheet> {
                 ),
               ),
               data: (references) {
-                if (references.isEmpty || _bookIndex == null) {
+                if (_bookIndex == null) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: widget.accentColor,
+                    ),
+                  );
+                }
+                if (references.isEmpty) {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(32),

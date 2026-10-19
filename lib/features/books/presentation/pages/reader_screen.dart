@@ -556,10 +556,16 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
   void _showCrossReferenceSheet(
     BuildContext ctx,
     AppSettings settings, {
+    int? chapterNum,
     int? selectedVerse,
   }) {
+    final chNum = chapterNum ?? _currentChapterNumber;
     if (selectedVerse != null) {
-      _selectVerse('$_currentChapterNumber:0:$selectedVerse');
+      setState(() {
+        _selectedKey = '$chNum:0:$selectedVerse';
+        _selectionEndKey = null;
+      });
+      _persistReadingPosition();
     }
     final verseNum = selectedVerse ?? _selectionVerseStart;
     if (verseNum == null) return;
@@ -582,7 +588,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
       ),
       builder: (_) => CrossReferenceSheet(
         sourceEntry: widget.entry,
-        sourceChapter: _currentChapterNumber,
+        sourceChapter: chNum,
         sourceVerse: verseNum,
         isDark: isDark,
         surfaceColor: surfaceColor,
@@ -857,6 +863,7 @@ class _ReaderScreenState extends ConsumerState<ReaderScreen>
                                                 _showCrossReferenceSheet(
                                                   context,
                                                   settings,
+                                                  chapterNum: pageChapterNum,
                                                   selectedVerse: vNum,
                                                 ),
                                             continuousReading:
